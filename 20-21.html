@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
+    <title>Бюджет Республики Казахстан на 2021 год</title>
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/dashboard/">
+    <!-- Bootstrap core CSS -->
+    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="css/dashboard.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">DATA IS EVERYWHERE</a>
+      <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+      <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+          <a class="nav-link" href="#">Выйти</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="index.html">
+                  <span data-feather="home"></span>
+                  Статистика промышленного производства <span class="sr-only">(current)</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="unemployment.html">
+                  <span data-feather="file"></span>
+                  Уровень безработицы
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="budget.html">
+                  <span data-feather="file"></span>
+                  Бюджет
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="20-21.html">
+                  <span data-feather="file"></span>
+                  2020-2021
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="kz-ro.html">
+                  <span data-feather="shopping-cart"></span>
+                  Казахстан-Румыния
+                </a>
+              </li>
+          </div>
+        </nav>
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+            <h1 class="h5">Республиканский бюджет на 2020 и 2021 годы</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+              <div class="btn-group mr-2">
+                <button class="btn btn-sm btn-outline-secondary">Поделиться</button>
+                <button class="btn btn-sm btn-outline-secondary">Скачать</button>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                <span data-feather="calendar"></span>
+                CSV
+              </button>
+            </div>
+          </div>
+
+          <div id="chart" style="float: left;"></div>
+          <div id="chart2"></div>
+
+        </main>
+      </div>
+    </div>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://unpkg.com/d3-sankey@0.4.1"></script>
+<script>
+
+var margin = {
+    top: 1,
+    right: 1,
+    bottom: 6,
+    left: 1
+  },
+
+  width = 500 - margin.left - margin.right,
+  height = 600 - margin.top - margin.bottom;
+
+var fontScale = d3.scaleLinear().range([8, 30]);
+
+var formatNumber = d3.format(",.0f"),
+  format = function(d) {
+    return formatNumber(d) + " тыс. тенге";
+  },
+  color = d3.scaleOrdinal(d3.schemeCategory20);
+
+var svg = d3.select("#chart").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var svg2 = d3.select("#chart2").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var sankey = d3.sankey()
+  .nodeWidth(15)
+  .nodePadding(10)
+  .size([width, height]);
+
+var path = sankey.link();
+
+d3.json("dataset/kz_budget_category_2021.json", function(error, graph) {
+  var nodeMap = {};
+    graph.nodes.forEach(function(x) { nodeMap[x.name] = x; });
+    graph.links = graph.links.map(function(x) {
+      return {
+        source: nodeMap[x.source],
+        target: nodeMap[x.target],
+        category: x.category,
+        value: x.value
+      };
+    });
+
+  
+  sankey
+    .nodes(graph.nodes)
+    .links(graph.links)
+    .layout(32);
+
+  fontScale.domain(d3.extent(graph.nodes, function(d) { return d.value }));
+
+  var link = svg.append("g").selectAll(".link")
+    .data(graph.links, function(d) { return d.id; })
+    .enter().append("path")
+    .attr("class", "link")
+    .attr("d", path)
+    .style("stroke-width", function(d) {
+      return Math.max(1, d.dy) + "px";
+    })
+    .sort(function(a, b) {
+      return b.dy - a.dy;
+    });
+
+  link.append("title")
+    .text(function(d) {
+      return d.source.name + " → " + d.target.name + "\n" + format(d.value);
+    });
+
+  var node = svg.append("g").selectAll(".node")
+    .data(graph.nodes, function(d) { return d.name; })
+    .enter().append("g")
+    .attr("class", "node")
+    .attr("transform", function(d) {
+      return "translate(" + d.x + "," + d.y + ")";
+    });
+
+  node.append("rect")
+    .attr("height", function(d) {
+      return d.dy;
+    })
+    .attr("width", sankey.nodeWidth())
+    .style("fill", function(d) {
+      return d.color = color(d.name.replace(/ .*/, ""));
+    })
+    .style("stroke", function(d) {
+      return d3.rgb(d.color).darker(1.8);
+    })
+    .append("title")
+    .text(function(d) {
+      return d.name + "\n" + format(d.value);
+    });
+
+  node.append("text")
+    .attr("x", -6)
+    .attr("y", function(d) {
+      return d.dy / 2;
+    })
+    .attr("dy", ".35em")
+    .attr("text-anchor", "end")
+    .attr("transform", null)
+    .style("fill", function(d) {
+      return d3.rgb(d.color).darker(2.4);
+    })
+    .text(function(d) {
+      return d.name;
+    })
+    .style("font-size", function(d) {
+      return Math.floor(fontScale(d.value)) + "px";
+    })
+    .filter(function(d) {
+      return d.x < width / 2;
+    })
+    .attr("x", 6 + sankey.nodeWidth())
+    .attr("text-anchor", "start");
+
+  function update(nodeData,linkData) {
+    sankey
+      .nodes(nodeData)
+      .links(linkData)
+      .layout(32);
+
+    sankey.relayout();
+    fontScale.domain(d3.extent(nodeData, function(d) { return d.value }));
+
+    var link = svg.selectAll(".link")
+      .data(linkData, function(d) { return d.id; })
+      .sort(function(a, b) {
+        return b.dy - a.dy;
+      })
+      .transition()
+      .duration(1300)
+      .attr("d", path)
+      .style("stroke-width", function(d) {
+        return Math.max(1, d.dy) + "px";
+      });
+
+
+    var node = svg.selectAll(".node")
+      .data(nodeData, function(d) { return d.name; })
+      .transition()
+      .duration(1300)
+      .attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      });
+
+    svg.selectAll(".node rect")
+      .transition()
+      .duration(1300)
+      .attr("height", function(d) {
+        return d.dy;
+      });
+
+    svg.selectAll(".node text")
+      .transition()
+      .duration(1300)
+      .attr("y", function(d) {
+        return d.dy / 2;
+      })
+      .style("font-size", function(d) {
+        return Math.floor(fontScale(d.value)) + "px";
+      });
+
+  };
+
+  function toggleTransition() {
+      console.log(graph);
+      var filtered_graph  = {};
+      filtered_graph["links"] = graph.links.filter(a => a.category <= 1);
+      filtered_graph["nodes"] = graph.nodes.filter(a => a.category <= 1);
+      //console.log(filtered_graph);
+      //update(filtered_graph.nodes,filtered_graph.links);
+  };
+  setTimeout(toggleTransition, 2400);
+});
+
+
+d3.json("dataset/kz_budget_2020.json", function(error, graph) {
+  var nodeMap = {};
+    graph.nodes.forEach(function(x) { nodeMap[x.name] = x; });
+    graph.links = graph.links.map(function(x) {
+      return {
+        source: nodeMap[x.source],
+        target: nodeMap[x.target],
+        category: x.category,
+        value: x.value
+      };
+    });
+
+  
+  sankey
+    .nodes(graph.nodes)
+    .links(graph.links)
+    .layout(32);
+
+  fontScale.domain(d3.extent(graph.nodes, function(d) { return d.value }));
+
+  var link = svg2.append("g").selectAll(".link")
+    .data(graph.links, function(d) { return d.id; })
+    .enter().append("path")
+    .attr("class", "link")
+    .attr("d", path)
+    .style("stroke-width", function(d) {
+      return Math.max(1, d.dy) + "px";
+    })
+    .sort(function(a, b) {
+      return b.dy - a.dy;
+    });
+
+  link.append("title")
+    .text(function(d) {
+      return d.source.name + " → " + d.target.name + "\n" + format(d.value);
+    });
+
+  var node = svg2.append("g").selectAll(".node")
+    .data(graph.nodes, function(d) { return d.name; })
+    .enter().append("g")
+    .attr("class", "node")
+    .attr("transform", function(d) {
+      return "translate(" + d.x + "," + d.y + ")";
+    });
+
+  node.append("rect")
+    .attr("height", function(d) {
+      return d.dy;
+    })
+    .attr("width", sankey.nodeWidth())
+    .style("fill", function(d) {
+      return d.color = color(d.name.replace(/ .*/, ""));
+    })
+    .style("stroke", function(d) {
+      return d3.rgb(d.color).darker(1.8);
+    })
+    .append("title")
+    .text(function(d) {
+      return d.name + "\n" + format(d.value);
+    });
+
+  node.append("text")
+    .attr("x", -6)
+    .attr("y", function(d) {
+      return d.dy / 2;
+    })
+    .attr("dy", ".35em")
+    .attr("text-anchor", "end")
+    .attr("transform", null)
+    .style("fill", function(d) {
+      return d3.rgb(d.color).darker(2.4);
+    })
+    .text(function(d) {
+      return d.name;
+    })
+    .style("font-size", function(d) {
+      return Math.floor(fontScale(d.value)) + "px";
+    })
+    .filter(function(d) {
+      return d.x < width / 2;
+    })
+    .attr("x", 6 + sankey.nodeWidth())
+    .attr("text-anchor", "start");
+
+  function update(nodeData,linkData) {
+    sankey
+      .nodes(nodeData)
+      .links(linkData)
+      .layout(32);
+
+    sankey.relayout();
+    fontScale.domain(d3.extent(nodeData, function(d) { return d.value }));
+
+    var link = svg2.selectAll(".link")
+      .data(linkData, function(d) { return d.id; })
+      .sort(function(a, b) {
+        return b.dy - a.dy;
+      })
+      .transition()
+      .duration(1300)
+      .attr("d", path)
+      .style("stroke-width", function(d) {
+        return Math.max(1, d.dy) + "px";
+      });
+
+
+    var node = svg2.selectAll(".node")
+      .data(nodeData, function(d) { return d.name; })
+      .transition()
+      .duration(1300)
+      .attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      });
+
+    svg2.selectAll(".node rect")
+      .transition()
+      .duration(1300)
+      .attr("height", function(d) {
+        return d.dy;
+      });
+
+    svg2.selectAll(".node text")
+      .transition()
+      .duration(1300)
+      .attr("y", function(d) {
+        return d.dy / 2;
+      })
+      .style("font-size", function(d) {
+        return Math.floor(fontScale(d.value)) + "px";
+      });
+
+  };
+
+  function toggleTransition() {
+      console.log(graph);
+      var filtered_graph  = {};
+      filtered_graph["links"] = graph.links.filter(a => a.category <= 1);
+      filtered_graph["nodes"] = graph.nodes.filter(a => a.category <= 1);
+      //console.log(filtered_graph);
+      //update(filtered_graph.nodes,filtered_graph.links);
+  };
+  setTimeout(toggleTransition, 2400);
+});
+
+</script>
+
+</body>
+</html>

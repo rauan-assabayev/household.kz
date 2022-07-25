@@ -1,0 +1,113 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon" />
+    <title>The Economist</title>
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/dashboard/">
+    <!-- Bootstrap core CSS -->
+    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="css/dashboard.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">DATA IS EVERYWHERE</a>
+      <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+      <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+          <a class="nav-link" href="#">Выйти</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link active" href="index.html">
+                  <span data-feather="home"></span>
+                  Статистика промышленного производства <span class="sr-only">(current)</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="unemployment.html">
+                  <span data-feather="file"></span>
+                  Уровень безработицы
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="budget.html">
+                  <span data-feather="file"></span>
+                  Бюджет
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="20-21.html">
+                  <span data-feather="file"></span>
+                  2020-2021
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="kz-ro.html">
+                  <span data-feather="shopping-cart"></span>
+                  Казахстан-Румыния
+                </a>
+              </li>
+          </div>
+        </nav>
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+            <h1 class="h5">Объемы и индексы физического объема промышленной продукции по регионам</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+              <div class="btn-group mr-2">
+                <button class="btn btn-sm btn-outline-secondary">Поделиться</button>
+                <button class="btn btn-sm btn-outline-secondary">Скачать</button>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                <span data-feather="calendar"></span>
+                CSV
+              </button>
+            </div>
+          </div>
+          <div id="chart"></div>
+          <div id="tooltip"></div><!-- div to hold tooltip. -->
+          <div style="float:left;">
+            <svg width="600" height="400" viewBox="0 0 1560 1000" id="regionsvg"></svg> <!-- svg to hold the map. -->
+          </div>
+
+          <div id="barchart"></div>
+          </main>
+      </div>
+    </div>
+
+<script type="text/javascript">
+  var selectedYear = 2019;
+  var selectedRegions = [];
+</script>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="charts/slider.js"></script> 
+<script src="charts/bar.js"></script> 
+<script src="charts/kz.js"></script> <!-- creates regionKZ. -->
+
+<script>
+  function tooltipHtml(n, d){ /* function to create html content string in tooltip div. */
+    return "<h4>"+n+"</h4>";
+  }
+  var sampleData ={}; /* Sample random data. */ 
+  var reg = ["AKM", "AKT", "ALM", "ATY", "KAR", "KUS", "KZY", "MAN", "PAV", "SEV", "VOS","YUZ", "ZAP", "ZHA"]
+  /* draw states on id #regionsvg */  
+  regionKZ.draw("#regionsvg", sampleData, tooltipHtml);
+</script>
+
+
+</body>
+</html>
